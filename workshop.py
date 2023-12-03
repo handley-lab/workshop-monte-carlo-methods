@@ -1,5 +1,5 @@
 #| # Monte Carlo Methods
-#| This is a 2 hour workshop exploring the fundamentals of monte carlo methods as used in particle physics and astronomy.
+#| This is a 2 hour workshop exploring the fundamentals of Monte Carlo methods as used in particle physics and astronomy.
 #| The workshop is designed to be run in a Jupyter notebook
 #| 
 #| By the end of this workshop you will have explored the core concepts of:
@@ -20,31 +20,38 @@ import scipy
 #-
 #| ## 1. Probability distributions
 #| 
-#|
 #| __Recap:__ a probability distribution $P$ on a variable $x$ is defined such that 
 #|  $$P(a<x<b) = \int_a^b P(x) dx,$$
 #| or equivalently that $P(x)dx$ represents the probability that $x$ lies in the interval $[x,x+dx]$.
 #|
+#| Probability distributions are the building blocks of a lot of code, for example a cross section in particle physics:
+#| $$ \sigma = \int |\mathcal{M}|^2 d\Omega$$
+#| the matrix element $|\mathcal{M}|^2$ is a distribution over collision events.
+#|
+#| In Cosmology, these will be posterior distributions $\mathcal{P}(\theta|D)$ generated from cosmological likelihoods $\mathcal{L}(D|\theta)$.
+#|
 #| The [scipy.stats](https://docs.scipy.org/doc/scipy/reference/stats.html) module is full of a whole variety of distributions, which forms the basis of a lot of other software.
-#| Let's create an example with a [von Mises distribution](https://en.wikipedia.org/wiki/Von_Mises_distribution) (an example you may not have seen before), rather than starting with a boring normal distribution
+#| Let's create a [von Mises distribution](https://en.wikipedia.org/wiki/Von_Mises_distribution) (an example you may not have seen before), rather than starting with a boring normal distribution
 #| $$P(x) = \frac{e^{\kappa \cos(x-\mu)}}{2\pi I_0(\kappa)}.$$
 
 kappa = 1
-mu = np.pi
+mu = 0
 dist = scipy.stats.vonmises(kappa, mu)
-x = np.linspace(0, 2*np.pi,1000)
+x = np.linspace(-np.pi, np.pi, 1000)
 p = dist.pdf(x)
 plt.plot(x, p);
 
-#| __Exercise 1:__ produce a plot showing different choices of `kappa` and `mu`?
-#| - __Question 1.1:__ What happens to the plot if you set `kappa` very large?
-#| - __Question 1.2:__ Try out a few other distribution
+#| __Exercise 1.1:__ produce a plot showing different choices of `kappa` and `mu`?
+#| - __Question 1.1.1:__ What happens to the plot if you set `kappa` very large?
+#|   - __Answer:__ _insert_
+#| - __Question 1.1.2:__ Try out a few other distribution
+#|   - __Answer:__ _insert_
 
-# Answer 1
+# Answer
 # Write your answer here into this code block
 
 #| uncomment and execute the below to see the solution (only after you've had a go yourself).
-# %load solutions/1.py
+# %load solutions/1.1.py
 
 #| ### Two dimensional distributions
 #| These concepts are extended relatively straightforwardly to two-dimensional distributions $P(x,y)
@@ -73,19 +80,25 @@ x, y, z  = np.sin(theta) * np.cos(phi), np.sin(theta) * np.sin(phi), np.cos(thet
 x = np.stack([x, y, z], axis=2)
 pdf = dist.pdf(x)
 plt.contourf(phi, theta, pdf)
+plt.colorbar();
 
-#| __Exercise 2:__ Copy and paste the above code and adjust it to get an understanding of the effect of  `kappa` and `mu`?
-#| - __Question 2.1:__ What do the colours represent?
-#| - __Question 2.2:__ What is the relevance of the `arccos` in the above?
+#| __Exercise 1.2:__ Copy and paste the above code and adjust it to get an understanding of the effect of  `kappa` and `mu`.
+#| - __Question 1.2.1:__ What do the colours represent?
+#|   - __Answer:__ _insert_
+#| - __Question 1.2.2:__ What is the relevance of the `arccos` in the above?
+#|   - __Answer:__ _insert_
 
-# Answer 2
+# Answer
 # Write your answer here into this code block
+#-
+# %load solutions/1.2.py
+
 
 #| The colours above correspond to a matplotlib default colour scheme mapped to the values of the probability density.
 #|
 #| It is more usual to plot 'one sigma' and 'two sigma' contours.
 
-pdf = vmf_dist(10, np.pi, np.pi/4).pdf(x)
+pdf = dist.pdf(x)
 pdf = pdf.reshape(-1)
 i = np.argsort(pdf)
 cdf = pdf[i].cumsum()
@@ -94,9 +107,12 @@ sigma = np.empty_like(pdf)
 sigma[i] = np.sqrt(2) * scipy.special.erfinv(1-cdf)
 sigma = sigma.reshape(phi.shape)
 plt.contourf(phi, theta, sigma, levels=[0, 1, 2], colors=['black', 'gray'])
+plt.colorbar();
 
-#| - __Question 3.1:__ What exactly do "one sigma" and "two sigma" contours mean, and how does the above code compute them?
-#| - __Question 3.2:__ How should one choose the colours for the contours? (have a look at the [anesthetic](https://github.com/handley-lab/anesthetic#another-posterior-plotting-tool) README for one option for doing this.
+#| - __Question 1.3.1:__ What exactly do "one sigma" and "two sigma" contours mean, and how does the above code compute them?
+#|   - __Answer:__ _insert_
+#| - __Question 1.3.2:__ How should one choose the colours for the contours? (have a look at the [anesthetic](https://github.com/handley-lab/anesthetic#another-posterior-plotting-tool) README for one option for doing this.
+#|   - __Answer:__ _insert_
 #|
 #| __Beware:__ [corner.py](https://corner.readthedocs.io/en/latest/pages/sigmas/) uses a different definition of sigma.
 
@@ -113,24 +129,162 @@ plt.contourf(phi, theta, sigma, levels=[0, 1, 2], colors=['black', 'gray'])
 
 from anesthetic.examples.perfect_ns import planck_gaussian
 params = ['omegabh2', 'omegach2', 'theta', 'tau', 'logA', 'ns']
-s = planck_gaussian()[params].plot_2d(kind='kde')
+planck_samples = planck_gaussian()[params].compress()
+planck_samples.plot_2d(kind='kde');
 
 
 #|The next section builds up to how we go about producing these plots in practice.
 
 
 #-
-#| ## 1. Why do sampling
-#| The core concept in numerical inference is that of *samples*.
+#| ## 2. Samples: why do sampling?
+#| 
+#| The core concept in numerical inference is that of _samples_. The premise is straightforward -- given some density $P(x)$, generate random numbers whose density in the large-number limit is equal to $P(x)$.
 #|
-#| Given some a-priori unknown probability distribution $P(x)$
+#| `scipy.stats` functions have the 'random variables' `.rvs()` method built in, which does exactly this.
 
-#| Some example code
-import numpy as np
+kappa = 1
+mu = 0
+dist = scipy.stats.vonmises(kappa, mu)
+x = np.linspace(-np.pi, np.pi, 1000)
+p = dist.pdf(x)
+plt.plot(x, p);
+samples = dist.rvs(10000)
+plt.hist(samples, density=True, bins=50);
 
-samples = np.random.rand(5)
-print(samples)
+#| __Question 2.1.1:__ what is the relevance of the `density=True` and `bins=50` arguments to `plt.hist`?
+#|   - __Answer:__ _insert_
 
-#| uncomment the below to see the solution
-# %load solutions/1.py
+#| We can also sample from the 2D distribution we defined above:
+
+kappa = 4
+phi0 = 0
+theta0 = np.pi/2
+dist = vmf_dist(kappa, phi0, theta0)
+N = 10000
+samples = dist.rvs(N)
+theta, phi = np.arccos(samples[:,2]), np.arctan2(samples[:,1], samples[:,0])
+plt.plot(phi, theta, '.', markersize=1);
+
+#| One of the lesser-know functionalities of matplotlib is that the samples above can also be used to plot contours with the triangulation functionality provided by the `tricontourf` method:
+
+pdf = dist.pdf(samples)
+i = np.argsort(pdf)
+cdf = np.arange(1,N+1)/(N+1)
+sigma = np.empty_like(pdf)
+sigma[i] = np.sqrt(2) * scipy.special.erfinv(1-cdf)
+plt.tricontourf(phi, theta, sigma, levels=[0, 1, 2], colors=['black', 'gray'], alpha=0.8)
+plt.plot(phi, theta, '.', markersize=1)
+plt.colorbar();
+
+
+#| - __Question 2.2.1:__  Why is the sigma calculation different in comparison to the previous example? [hard! -- maybe return later to this question]
+#|   - __Answer:__ _insert_
+
+#| One way to see how powerful the above approach of using samples to make plots is, is to consider how we might go about making the triangle plot using the meshgrid approach. To do this, we would have to solve two problems:
+#| - __Question 2.3.1:__ How would you use a meshgrid to compute marginal distributions?
+#|   - __Answer:__ _insert_
+#| - __Question 2.3.2:__ How much more expensive would this be in 6 dimensions?
+#|   - __Answer:__ _insert_
+
+#| Sampling solves both of these:
+#| - marginal samples are found just by ignoring columns
+#| - drawing samples from higher-dimensional distributions is not exponentially harder
+#| To see this, let's take a look at the planck_samples, which when printed show an anesthetic (pandas extension) array
+
+planck_samples
+
+#| We can plot samples from the marginal distribution by
+
+plt.plot(*planck_samples[['logA', 'tau']].to_numpy().T, '.');
+
+#| To plot the marginal contours, we have to use some form of low-dimensional density estimation (kde is the standard, basically putting a small gaussian on each sample and adding these together, but in principle one could use neural density estimators or histograms for more/less advanced examples). Density estimation is an acceptable approximation in one and two dimensions but becomes very innacurate in higher dimensions. 
+
+#| There are many packages that implement all of this for you, and I would encourage you to resist the temptation to write your own! (irony noted)
+#| - [getdist](https://getdist.readthedocs.io/en/latest/)
+#|   - state-of-the-art in KDE edge correction
+#|   - industry standard since 2010
+#|   - difficult to extend/use
+#| - [corner.py](https://corner.readthedocs.io/en/latest/)
+#|   - histogram-based foreman-mackay software
+#| - [chainconsumer](https://samreay.github.io/ChainConsumer/)
+#|   - increasingly popular python tool for MCMC samples
+#| - [anesthetic](https://anesthetic.readthedocs.io/en/latest/)
+#|   - specialised for nested sampling, but can also do MCMC
+#|   - explicitly builds on the numpy/scipy/pandas stack.
+#| 
+#| You can see here that the python package anesthetic by default uses the whitespace above the diagonal to plot samples, in addition to estimates of the 1D and 2D marginals:
+
+planck_samples[['logA', 'tau']].plot_2d();
+
+#| Samples are an extremely powerful tool for performing numerical inference. In particular the following property holds
+#| $$ x\sim P(x)dx \quad\Rightarrow\quad f(x) \sim P(f)df$$
+#| namely, if you have a set of samples in a variable $x$, and you want to know how $y=f(x)$ is distributed, you just assume the answer is $x_i$ and compute $y_i = f(x_i)$ for each sample. Sampling turns uncertainty quantification into repeated forward models.
+
+#| __Exercise 2.4:__ if $x$ is normally distributed, plot the distribution of $2**x$
+#|
+#| __Exercise 2.5:__ prove mathematically that in this case x is log-normally distributed, find its scale parameter, and plot this on your plot
+
+# Answer
+#-
+# %load solutions/2.5.py
+
+#| The golden rule of Numerical inference is __stay in samples__ until the end. You should know by now that in general
+#| $$f(\langle x \rangle) \ne \langle f(x) \rangle $$
+#| so taking a mean before the end can bias your inference.
+#|
+#| The next question which might be occurring to you is "How do I generate samples if my distribution is not in scipy?" (e.g. a feynman-calculation based matrix element, or a cosmological likelihood)
+
+
+#| ## 3. Sampling
+#| We will assume that we can evaluate the probability density function $P(x)$ (or at least the unnormalised density $P^*(x)\propto P(x)$) in finite time (i.e. seconds). For initiates, it might be surprising that access to the exact $P(x)$ is not sufficient to generate samples, but it is not.
+#|
+#|(N.B. The frontier of inference at the moment is simulation based inference, which develops methods for inference when you only have a simulator $f(x)$, but this is beyond the scope of this workshop).
+
+#| ## 3.0 Random sampling
+#| Let's first see why random sampling is not sufficient.
+#|
+
+from handleymcmethods.examples import planck
+
+#| __Exercise 3.0.1:__ Generate 10000 samples from planck.prior, and find the largest planck.loglikelihood value in the samples. Repeat this process a few times. What do you notice?
+
+# Answer
+#-
+# %load solutions/3.0.1.py
+
+#| The issue is that the prior is much wider than the likelihood/posterior, so random samples are very unlikely to be close to the peak of the likelihood. This same problem would occur for meshgrid sampling.
+#|
+#| One solution for finding a good region is of course a gradient descent
+#| __Exercise 3.0.2:__ Use `scipy.optimize.minimize` to find the maximum of the loglikelihood. How does this compare to the maximum of the other results
+
+# Answer
+#-
+# %load solutions/3.0.2.py
+
+#| Whilst this approach does find the maximum probability point, this does not generate samples, which is what we need for our error bars.
+
+#| ## 3.1 Metropolis Hastings
+#|
+#| The first approach that can successfully generate
+
+
+
+#| ## 3.2 Nested sampling
+#|
+
+
+#| ## 3.3 Hamiltonian Monte Carlo
+#|
+
+#| ## 4. Integration
+#| 
+#| ## 3.1 Importance sampling
+#|
+#| ## 3.2 Nested sampling
+#|
+
+
+#| ## 3.3 Simulated annealing
+#|
 
