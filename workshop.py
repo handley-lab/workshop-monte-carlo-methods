@@ -325,9 +325,9 @@ plt.plot(*planck.mean[:2], 'x', markersize=10, color='black');
 #| - propose a new point $x'$ from some proposal distribution $Q(x'|x)$
 #| - accept the point with probability
 #| $$ \alpha = \min\left(1, \frac{P(x')Q(x|x')}{P(x)Q(x'|x)}\right)$$
-#| - repeat
+#| - repeat until convergence criterion is reached
 #|
-#| Note this includes the generalisation to asymmetric proposal distributions, which is necessary for the algorithm to converge, and more carefully acounts for the fact that the probability shouldn't be greater than 1.
+#| Note this includes the generalisation to asymmetric proposal distributions, which is necessary for the algorithm to converge, and more carefully acounts for the fact that the probability shouldn't be greater than 1. Convergence criteria usually include a variation of the Gelman-Rubin statistic.
 #| 
 #| Example implementations of metropolis hastings include
 #| - PyMC
@@ -344,7 +344,46 @@ plt.plot(*planck.mean[:2], 'x', markersize=10, color='black');
 
 #| ## 3.2 Nested sampling
 #|
+#| As discussed in my [talk](https://github.com/williamjameshandley/talks/raw/unam_2023/will_handley_unam_2023.pdf), the nested sampling algorithm can be summarised as:
+#| - generate nlive samples from the prior
+#| - at each iteration, replace the lowest likelihood sample with a new sample from the prior at greater likelihood
+#| - stop when the live points have sufficiently compressed
 
+#| __Exercise 3.2.1:__ Implement the nested sampling algorithm for the planck likelihood with 50 live points, using a brute-force prior-sample+rejection approach. How many iterations do you get through? (put in a print statement to see the slow down)
+
+# Answer
+#-
+# %load solutions/3.2.1.py
+
+nlive = 50
+live_points = planck.prior.rvs((nlive, 6))
+live_logLs = planck.loglikelihood(live_points)
+
+for i in range(nlive*11):
+    print(i)
+    while True:
+        x = planck.prior.rvs()
+        logL = planck.loglikelihood(x)
+        if logL > live_logLs.min():
+            break
+    live_points[live_logLs.argmin()] = x
+    live_logLs[live_logLs.argmin()] = logL
+    
+#| You should find you get about to at most 500 iterations before you run out of patience!
+
+#| __Exercise 3.2.2:__ This time, implement a more efficient approach by using a box around the live points to generate samples from the prior. To be correct, you should make the box slightly larger than this! Run the algorithm for 
+
+# Answer
+#-
+# %load solutions/3.2.2.py
+    
+#| __Exercise 3.2.3:__ Adjust your algorithm so that it records the dead points, as well as the 'birth contour'. Plot the dead points. Pass these into anesthetic to check convergence and compute evidences.
+
+# Answer
+#-
+# %load solutions/3.2.3.py
+
+#| __Exercise 3.2.4:__ Write a non-rejection based sampling algorithm (e.g. metropolis hastings using the covariance of the live points to build a proposal distribution) and compare the number of likelihood evaluations required to reach the same accuracy.
 
 #| ## 3.3 Hamiltonian Monte Carlo
 #|
