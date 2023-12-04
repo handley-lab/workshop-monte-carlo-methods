@@ -8,4 +8,5 @@ while True:
         break
 
 print(sol.x)
+print(sol.x-planck.mean)
 print(planck.loglikelihood(sol.x))

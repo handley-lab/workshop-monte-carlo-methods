@@ -125,7 +125,7 @@ plt.colorbar();
 #| $$ P(x_i, x_j) = \int P(x) \prod\limits_{k\ne i, k\ne j} dx_k$$
 #| and arrange these into a "corner" or "triangle" plot.
 
-#| This example takes a few seconds to generate and plot -- don't worry about the details, we will cover them later:
+#| This example takes a few seconds to generate and plot -- don't worry about the code details, we will cover them later:
 
 from anesthetic.examples.perfect_ns import planck_gaussian
 params = ['omegabh2', 'omegach2', 'theta', 'tau', 'logA', 'ns']
@@ -266,8 +266,80 @@ from handleymcmethods.examples import planck
 
 #| ## 3.1 Metropolis Hastings
 #|
-#| The first approach that can successfully generate
+#| The first approach that can successfully generate samples from a distribution is the [Metropolis-Hastings algorithm](https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm).
+#| The simplest version of this algorithm is as follows:
+#| - start at some point $x_0$
+#| - at iteration $i$: 
+#|   - propose a new point $x'$ a random step away from $x_i$
+#|   - accept the point with probability
+#|   $$ \alpha = \frac{P(x')}{P(x_i)}$$
+#|   - if the point is accepted, $x_{i+1} = x'$, otherwise $x_{i+1} = x_i$
+#|   - stop when you have enough samples
 
+#| __Exercise 3.1.1:__ Implement the Metropolis-Hastings algorithm for the planck likelihood. 
+#| - hint: if it's not working, try plotting the the set of points you're generating
+
+# Answer
+#-
+# %load solutions/3.1.1.py
+
+N = 10000
+
+def Q(x0):
+    dist = scipy.stats.multivariate_normal(x0, planck.cov)
+    return dist.rvs()
+
+for _ in range(3):
+    x0 = planck.mean
+    samples = []
+    for i in range(N):
+        x_ = Q(x0)
+        logalpha = planck.loglikelihood(x_) - planck.loglikelihood(x0)
+        alpha = np.exp(logalpha)
+        if np.random.rand() < alpha:
+            x0 = x_
+        samples.append(x0[:])
+
+    samples = np.array(samples)
+    plt.plot(*samples[:,[0,1]].T)
+
+plt.plot(*planck.mean[:2], 'x', markersize=10, color='black');
+
+#| Things can be made a lot better by choosing a better method for proposing new points.
+#| For example, if you use the true posterior coviariance matrix, the solution converges much better
+#| - hint: you can get the covariance matrix from `planck.cov` and the mean from `planck.mean`
+
+# Answer
+#-
+# %load solutions/3.1.2.py
+
+#| Of coures in practice one doesn't know the answer going in, and therefore typically it has to be learned, either by gradual updating.
+
+#| - __Question 3.1.3:__ Where does the metropolis hastings algorithm fail?
+#|   - __Answer:__ _insert_
+#| - __Question 3.1.4:__ How well does this algorithm parallelise?
+#|   - __Answer:__ _insert_
+
+#| The full algorithm is as follows:
+#| - start at some point $x_0$
+#| - propose a new point $x'$ from some proposal distribution $Q(x'|x)$
+#| - accept the point with probability
+#| $$ \alpha = \min\left(1, \frac{P(x')Q(x|x')}{P(x)Q(x'|x)}\right)$$
+#| - repeat
+#|
+#| Note this includes the generalisation to asymmetric proposal distributions, which is necessary for the algorithm to converge, and more carefully acounts for the fact that the probability shouldn't be greater than 1.
+#| 
+#| Example implementations of metropolis hastings include
+#| - PyMC
+#| - Cobaya
+#| - CosmoSIS
+#| - MontePython
+#|
+#| More modern work is exploring the use of neural networks to learn the proposal distribution, which can be much more efficient than the above.
+#| - [FlowMC](https://arxiv.org/abs/2211.06397)
+#| - [MCMC-diffusion](https://arxiv.org/abs/2309.01454)
+#|
+#| Further extensions to this approach include ensemble sampling ([emcee](https://emcee.readthedocs.io)), slice sampling ([zeus](https://zeus-mcmc.readthedocs.io/en/latest/)) and many others.
 
 
 #| ## 3.2 Nested sampling
