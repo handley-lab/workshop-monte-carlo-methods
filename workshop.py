@@ -283,28 +283,6 @@ from handleymcmethods.examples import planck
 #-
 # %load solutions/3.1.1.py
 
-N = 10000
-
-def Q(x0):
-    dist = scipy.stats.multivariate_normal(x0, planck.cov)
-    return dist.rvs()
-
-for _ in range(3):
-    x0 = planck.mean
-    samples = []
-    for i in range(N):
-        x_ = Q(x0)
-        logalpha = planck.loglikelihood(x_) - planck.loglikelihood(x0)
-        alpha = np.exp(logalpha)
-        if np.random.rand() < alpha:
-            x0 = x_
-        samples.append(x0[:])
-
-    samples = np.array(samples)
-    plt.plot(*samples[:,[0,1]].T)
-
-plt.plot(*planck.mean[:2], 'x', markersize=10, color='black');
-
 #| Things can be made a lot better by choosing a better method for proposing new points.
 #| For example, if you use the true posterior coviariance matrix, the solution converges much better
 #| - hint: you can get the covariance matrix from `planck.cov` and the mean from `planck.mean`
@@ -354,20 +332,6 @@ plt.plot(*planck.mean[:2], 'x', markersize=10, color='black');
 # Answer
 #-
 # %load solutions/3.2.1.py
-
-nlive = 50
-live_points = planck.prior.rvs((nlive, 6))
-live_logLs = planck.loglikelihood(live_points)
-
-for i in range(nlive*11):
-    print(i)
-    while True:
-        x = planck.prior.rvs()
-        logL = planck.loglikelihood(x)
-        if logL > live_logLs.min():
-            break
-    live_points[live_logLs.argmin()] = x
-    live_logLs[live_logLs.argmin()] = logL
     
 #| You should find you get about to at most 500 iterations before you run out of patience!
 
@@ -377,7 +341,7 @@ for i in range(nlive*11):
 #-
 # %load solutions/3.2.2.py
     
-#| __Exercise 3.2.3:__ Adjust your algorithm so that it records the dead points, as well as the 'birth contour'. Plot the dead points. Pass these into anesthetic to check convergence and compute evidences.
+#| __Exercise 3.2.3:__ Adjust your algorithm so that it records the dead points, as well as the 'birth contour'. Plot the dead points. Pass these into the anesthetic gui
 
 # Answer
 #-
@@ -385,12 +349,18 @@ for i in range(nlive*11):
 
 #| __Exercise 3.2.4:__ Write a non-rejection based sampling algorithm (e.g. metropolis hastings using the covariance of the live points to build a proposal distribution) and compare the number of likelihood evaluations required to reach the same accuracy.
 
-#| ## 3.3 Hamiltonian Monte Carlo
-#|
-
 #| ## 4. Integration
 #| 
+#| If your probability distribution is not normalised, the integration constant is of critical importance, either as a cross section (particle physics), a Bayesian evidence (cosmology) or a partition function (statistical mechanics).
+#|
+#| Fundamentally we want to compute:
+#| $$ Z = \int P^*(x) dx$$
+#| The traditional discussion begins by pointing out that over the domain of $P^*(x)$, the region where $P^*(x)$ is of non-zero probability is very small, which we don't know a-priori where it is.  On the face of it, this doesn't look like a deal-breaker -- we have been developing ever more sophisticated ways of generating samples $x\sim P$, so we have plenty of points with non-zero $P^*(x)$
+#|
+#| However, there is another portion of the integral, namely $dx$, which posterior samples __do not__ give us. The challenge is therefore not finding the "typical set", or generating points within it, it is measuring its volume.
+
 #| ## 3.1 Importance sampling
+#| The go-to method in particle physics for doing this is importance sampling.
 #|
 #| ## 3.2 Nested sampling
 #|
