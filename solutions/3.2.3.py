@@ -37,6 +37,5 @@ dead_logL_births += live_logL_births.tolist()
 from anesthetic import NestedSamples
 samples = NestedSamples(dead_points, logL=dead_logLs, logL_birth=dead_logL_births)
 plt.plot(*samples[[0,1]].to_numpy().T, '.')
-samples.gui()
 
 

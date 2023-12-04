@@ -362,6 +362,16 @@ from handleymcmethods.examples import planck
 
 #| ## 3.1 Importance sampling
 #| The go-to method in particle physics for doing this is importance sampling.
+#| The premise here is to find a normalised distribution $Q(x)$ which easy to sample from (for example a scipy distribution), and which is similar to $P^*(x)$ in the region where $P^*(x)$ is non-zero.
+#| 
+#| One then uses the (almost trivial) result:
+#| $$ \int P^*(x) dx = \int \frac{P^*(x)}{Q(x)} Q(x) dx = \left\langle \frac{P^*(x)}{Q(x)} \right\rangle_Q$$
+#| I.e. one generates samples from $x\sim Q(x)$ and computes the average of $P^*(x)/Q(x)$.
+#|
+#| You can think of this intuitively as 'trimming off' the regions where $P^*(x)$ is zero, and then computing the average of the remaining regions -- a more sophisticate way of picking a cleverer prior.
+#|
+#| If you choose a poor $Q$, then this will be very inefficient, with very few samples contributing to the integral. These weighted samples are in a definite sense exact
 #|
 #| ## 3.2 Nested sampling
 #|
+#| Nested sampling can be thought ouf a set of nested importance samples
