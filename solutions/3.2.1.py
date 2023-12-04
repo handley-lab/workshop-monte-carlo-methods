@@ -1,9 +1,9 @@
+from tqdm import trange
 nlive = 50
 live_points = planck.prior.rvs((nlive, 6))
 live_logLs = planck.loglikelihood(live_points)
 
-for i in range(nlive*11):
-    print(i)
+for i in trange(nlive*9, miniters=1):
     while True:
         x = planck.prior.rvs()
         logL = planck.loglikelihood(x)
