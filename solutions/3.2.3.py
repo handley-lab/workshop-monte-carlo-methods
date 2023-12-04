@@ -1,3 +1,4 @@
+from tqdm import trange
 nlive = 50
 live_points = planck.prior.rvs((nlive, 6))
 live_logLs = planck.loglikelihood(live_points)
@@ -7,7 +8,7 @@ dead_logLs = []
 dead_logL_births = []
 expansion = 1.1
 
-for i in range(nlive*40):
+for i in trange(nlive*40):
     print(i)
     while True:
         mn = live_points.min(axis=0)

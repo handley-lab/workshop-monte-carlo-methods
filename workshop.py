@@ -336,6 +336,7 @@ from handleymcmethods.examples import planck
 #| You should find you get about to at most 500 iterations before you run out of patience!
 
 #| __Exercise 3.2.2:__ This time, implement a more efficient approach by using a box around the live points to generate samples from the prior. To be correct, you should make the box slightly larger than this! Run the algorithm for 
+#| - __Question 3.2.2:__ What are the failure modes of this method?
 
 # Answer
 #-
@@ -364,8 +365,3 @@ from handleymcmethods.examples import planck
 #|
 #| ## 3.2 Nested sampling
 #|
-
-
-#| ## 3.3 Simulated annealing
-#|
-

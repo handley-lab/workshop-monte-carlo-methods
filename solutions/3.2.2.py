@@ -1,10 +1,10 @@
+from tqdm import trange
 nlive = 50
 live_points = planck.prior.rvs((nlive, 6))
 live_logLs = planck.loglikelihood(live_points)
 expansion = 1.1
 
-for i in range(nlive*11):
-    print(i)
+for i in trange(nlive*11):
     while True:
         mn = live_points.min(axis=0)
         mx = live_points.max(axis=0)
