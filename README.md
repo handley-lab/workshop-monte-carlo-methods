@@ -1,5 +1,7 @@
 # Monte Carlo Methods
 
+Given at [Advanced Statistical Tools at the Intersection of cosmology and High-Energy & Nuclear Physics](https://www.fisica.unam.mx/workshops/advanced_statistical_tools), UNAM Mexico
+
 # Getting started:
 
 ```bash
