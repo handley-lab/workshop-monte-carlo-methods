@@ -1,0 +1,1 @@
+#| This is exponentially more expensive. If the grid size were 10, then the cost of a 2D problem is ~10^2, whilst the cost of a 6D problem is ~10^6, so it woul be 10^4 times harder for a 10 point grid, and 20^4 times harder for a 20 point grid. 

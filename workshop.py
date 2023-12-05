@@ -42,16 +42,16 @@ p = dist.pdf(x)
 plt.plot(x, p);
 
 #| __Exercise 1.1:__ produce a plot showing different choices of `kappa` and `mu`?
-#| - __Question 1.1.1:__ What happens to the plot if you set `kappa` very large?
-#|   - __Answer:__ _insert_
-#| - __Question 1.1.2:__ Try out a few other distribution
-#|   - __Answer:__ _insert_
 
 # Answer
 # Write your answer here into this code block
 
 #| uncomment and execute the below to see the solution (only after you've had a go yourself).
 # %load solutions/1.1.py
+#| - __Question 1.1.1:__ What happens to the plot if you set `kappa` very large?
+#|   - __Answer 1.1.1:__ _insert_
+#| - __Question 1.1.2:__ [extension] Try out a few other distribution
+#|   - __Answer 1.1.2:__ _insert_
 
 #| ### Two dimensional distributions
 #| These concepts are extended relatively straightforwardly to two-dimensional distributions $P(x,y)
@@ -83,19 +83,17 @@ plt.contourf(phi, theta, pdf)
 plt.colorbar();
 
 #| __Exercise 1.2:__ Copy and paste the above code and adjust it to get an understanding of the effect of  `kappa` and `mu`.
-#| - __Question 1.2.1:__ What do the colours represent?
-#|   - __Answer:__ _insert_
-#| - __Question 1.2.2:__ What is the relevance of the `arccos` in the above?
-#|   - __Answer:__ _insert_
 
 # Answer
 # Write your answer here into this code block
 #-
 # %load solutions/1.2.py
+#| - __Question 1.2.1:__ What do the colours represent?
+#|   - __Answer 1.2.1:__ _insert_
+#| - __Question 1.2.2:__ What is the relevance of the `arccos` in the above?
+#|   - __Answer 1.2.2:__ _insert_
 
 
-#| The colours above correspond to a matplotlib default colour scheme mapped to the values of the probability density.
-#|
 #| It is more usual to plot 'one sigma' and 'two sigma' contours.
 
 pdf = dist.pdf(x)
@@ -110,9 +108,9 @@ plt.contourf(phi, theta, sigma, levels=[0, 1, 2], colors=['black', 'gray'])
 plt.colorbar();
 
 #| - __Question 1.3.1:__ What exactly do "one sigma" and "two sigma" contours mean, and how does the above code compute them?
-#|   - __Answer:__ _insert_
+#|   - __Answer 1.3.1:__ _insert_
 #| - __Question 1.3.2:__ How should one choose the colours for the contours? (have a look at the [anesthetic](https://github.com/handley-lab/anesthetic#another-posterior-plotting-tool) README for one option for doing this.
-#|   - __Answer:__ _insert_
+#|   - __Answer 1.3.2:__ _insert_
 #|
 #| __Beware:__ [corner.py](https://corner.readthedocs.io/en/latest/pages/sigmas/) uses a different definition of sigma.
 
@@ -152,8 +150,8 @@ plt.plot(x, p);
 samples = dist.rvs(10000)
 plt.hist(samples, density=True, bins=50);
 
-#| __Question 2.1.1:__ what is the relevance of the `density=True` and `bins=50` arguments to `plt.hist`?
-#|   - __Answer:__ _insert_
+#| - __Question 2.1.1:__ what is the relevance of the `density=True` and `bins=50` arguments to `plt.hist`?
+#|   - __Answer 2.1.1:__ _insert_
 
 #| We can also sample from the 2D distribution we defined above:
 
@@ -178,14 +176,14 @@ plt.plot(phi, theta, '.', markersize=1)
 plt.colorbar();
 
 
-#| - __Question 2.2.1:__  Why is the sigma calculation different in comparison to the previous example? [hard! -- maybe return later to this question]
-#|   - __Answer:__ _insert_
+#| - __Question 2.2.1:__  Why is the sigma calculation different in comparison to the previous example? [hard]
+#|   - __Answer 2.2.1:__ _insert_
 
 #| One way to see how powerful the above approach of using samples to make plots is, is to consider how we might go about making the triangle plot using the meshgrid approach. To do this, we would have to solve two problems:
 #| - __Question 2.3.1:__ How would you use a meshgrid to compute marginal distributions?
-#|   - __Answer:__ _insert_
+#|   - __Answer 2.3.1:__ _insert_
 #| - __Question 2.3.2:__ How much more expensive would this be in 6 dimensions?
-#|   - __Answer:__ _insert_
+#|   - __Answer 2.3.2:__ _insert_
 
 #| Sampling solves both of these:
 #| - marginal samples are found just by ignoring columns
@@ -329,12 +327,12 @@ from handleymcmethods.examples import planck
 #-
 # %load solutions/3.1.2.py
 
-#| Of coures in practice one doesn't know the answer going in, and therefore typically it has to be learned, either by gradual updating.
+#| Of coures in practice one doesn't know the answer going in, and therefore typically it has to be learned, either by knowing something about the physics, using another algorithm first, or gradually updating the proposal distribution.
 
 #| - __Question 3.1.3:__ Where does the metropolis hastings algorithm fail?
-#|   - __Answer:__ _insert_
+#|   - __Answer 3.1.3:__ _insert_
 #| - __Question 3.1.4:__ How well does this algorithm parallelise?
-#|   - __Answer:__ _insert_
+#|   - __Answer 3.1.4:__ _insert_
 
 #| The full algorithm is as follows:
 #| - start at some point $x_0$
@@ -346,10 +344,12 @@ from handleymcmethods.examples import planck
 #| Note this includes the generalisation to asymmetric proposal distributions, which is necessary for the algorithm to converge, and more carefully acounts for the fact that the probability shouldn't be greater than 1. Convergence criteria usually include a variation of the Gelman-Rubin statistic.
 #| 
 #| Example implementations of metropolis hastings include
-#| - PyMC
-#| - Cobaya
-#| - CosmoSIS
-#| - MontePython
+#| - [PyMC](https://www.pymc.io/welcome.html)
+#| - [Cobaya](https://cobaya.readthedocs.io/en/latest/)
+#| - [CosmoSIS](https://cosmosis.readthedocs.io/en/latest/)
+#| - [MontePython](https://monte-python.readthedocs.io/en/latest/)
+#|
+#| Though in practice, since a metropolis sampler is so easy to write, and aspects of the proposal distribution are so system-specific, many people just choose to write their own!
 #|
 #| More modern work is exploring the use of neural networks to learn the proposal distribution, which can be much more efficient than the above.
 #| - [FlowMC](https://arxiv.org/abs/2211.06397)
@@ -360,7 +360,7 @@ from handleymcmethods.examples import planck
 
 #| ### 3.2 Nested sampling
 #|
-#| As discussed in my [talk](https://github.com/williamjameshandley/talks/raw/unam_2023/will_handley_unam_2023.pdf), the nested sampling algorithm can be summarised as:
+#| As discussed in the [talk](https://github.com/williamjameshandley/talks/raw/unam_2023/will_handley_unam_2023.pdf), the nested sampling algorithm can be summarised as:
 #| - generate nlive samples from the prior
 #| - at each iteration, replace the lowest likelihood sample with a new sample from the prior at greater likelihood
 #| - stop when the live points have sufficiently compressed
@@ -395,13 +395,80 @@ from handleymcmethods.examples import planck
 #| ## Interlude
 #|
 #| The goal of the above 'my first metropolis algorithm' and 'my first nested sampler' exercises is to give you a feel for how at these algorithms work at the base level, and how they can be implemented, so that you can assess the efficiacy of new ideas. In practice you should use one of the more established libraries for doing this, which have been battle-tested and optimised for speed. In particular, some of the things which cause ~O(10) lines of code to expand to ~O(1000) lines are:
-#| - sophisticated live point generation
+#| - robust live point generation
 #| - parallelisation
 #| - mode identification & handling
 #|
 #| Most packages focus on the first of these, many (but not all) provide the second, with very few implementing the substantial bookkeeping required for the third.
+#|
+#| As discussed in the talk, samplers 
+#|
+#| #### Rejection samplers (or 'region samplers')
+#| - [MultiNest](https://github.com/farhanferoz/MultiNest)
+#|   - ellipsoidal decomposition, parallelised, clustered
+#|   - the original nested sampler
+#|   - Incorporated into a wide variety of packages (GAMBIT, CosmoSIS, MontePython, Cobaya, etc)
+#|   - Johannes Buchner implemented a [python wrapper](https://johannesbuchner.github.io/PyMultiNest/)
+#| - [UltraNest](https://johannesbuchner.github.io/UltraNest/)
+#|   - kernel-based method for generating live points, paralellised
+#|   - Johannes Buchner's new python nested sampler
+#|   - incorporates new advances in nested sampling not in MultiNest
+#|   - python only (so for very fast likelihoods may be worth compiling multinest)
+#|   - also implements many other strategies (including path sampling)
+#| - [nessai](https://nessai.readthedocs.io/en/latest/)
+#|   - normalising flows to generate live points
+#|   - popular in gravitational waves community
+#|
+#| #### Chain-based samplers (or 'path samplers')
+#| - [PolyChord](https://github.com/PolyChord/PolyChordLite)
+#|   - slice sampling, parallelised, clustered
+#|   - the original path sampler
+#| - [pymatnext](https://libatoms.github.io/pymatnest/intro.html)
+#|   - specific for materials science
+#| 
+#| #### Other samplers
+#| - [dynesty](https://dynesty.readthedocs.io/en/latest/)
+#|   - python re-implementation of many of the above
+#|   - very popular
+#|   - easy to install
+#|   - defaults not well chosen for path-based samplers
+#|   - although 'dy' is in the name, most nested samplers (polychord, ultranest etc) are now dynamic nested samplers as well
+#|
+#| __Will Handley's recommendations on choosing samplers:__
+#| - if your problem is low-dimensional ~O(10) parameters, use UltraNest
+#|   - easier for newcomers to install than multinest
+#|   - self-tunes its efficiency parameters, so gives an honest scaling with dimensionality
+#| - if your problem is high-dimensional, use PolyChord
+#|   - whilst other samplers (dynesty, ultranest) implement slice sampling, neither implement clustering, which is necessary for multi-modal problems
+#|   - in particular dynesty is very poorly parallelised (since it is optimised for notebook rather than HPC work).
+#|   - the dynesty defaults for slice sampling are too generous (and therefore often give wrong, but faster answers)
+#|   - it is slightly harder to install due to the legacy fortran component.
+#|
+#| ### Practical advice for using nested sampling
+#| Nested sampling run-time scales as:
+#| $$ T \propto  f_\mathrm{sampler} \times n_\mathrm{live}/n_\mathrm{cores}$$
+#| providing $n_\mathrm{cores} \le n_\mathrm{live}$.
+#| - rejection samplers: the $f_\mathrm{sampler} = e^{d/d_0}$ where $d_0$ is problem dependent$.
+#| - chain-based samplers: the $f_\mathrm{sampler} = \mathcal{O}(3) \times n_\mathrm{repeat}$
+#|
+#| (The proportionality constant is $\mathcal{D}_\mathrm{KL}(\mathcal{P}||\pi) T_\mathrm{like}$)
+#|
+#| This scaling is very useful for planning big runs, all you need to do is determine the proportionality constant, which in practice you get from a preliminary run.
+#|
+#| The strategy is therefore:
+#| 1. run a preliminary run with a small number of live points, debug code, and determine $T_0$.
+#|    - for rejection samplers, you need a minimum number of samples to train the region proxy (ellipsoidal decomposition, normalising flow), usually ~O(500)
+#|    - for path samplers this can be set much lower (as low as 5!)
+#|    - Since nested sampling is parallelised up to the number of cores, setting nlive ~ ncores is a good starting point (e.g. on modern HPC machines ~O(50), on your laptop ~O(10)).
+#| 2. scale up to a production run (nlive ~ 1000)
+#|   - If you had $n_\mathrm{live}^0$ and $n_\mathrm{cores}^0$ giving you $T_0$, the full runtime will be
+#|    $$T = T_0 \times \frac{n_\mathrm{live}}{n_\mathrm{live}^0} \times \frac{n_\mathrm{cores}^0}{n_\mathrm{cores}}$$
+#|   - With arbitrary HPC, you can scale the cores with the live points and retain the same walltime $T_0$.
+#| 3. check that you ran with high enough $f_sampler$ by halving/doubling it and checking the results are consistent.
 
-#| Summary of Packages
+
+
+
 
 #| General advice on usage
 

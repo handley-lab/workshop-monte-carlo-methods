@@ -1,0 +1,1 @@
+#| Compensates for the usual $\sin\theta d\theta d\phi$ area element, or equivalently forces it to be uniform in $z$. This is critical later when we compute the the one sigma and two sigma contours, by assuming that the theta, phi distribution are distributed uniformly in the prior/measure.
