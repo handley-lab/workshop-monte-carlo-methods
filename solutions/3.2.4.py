@@ -1,20 +1,18 @@
 from tqdm import trange
 
-def generate_point(expansion = 1.1):
+def generate_point(num_repeats=30):
 
-    while True:
-        mn = live_points.min(axis=0)
-        mx = live_points.max(axis=0)
-        box = (mx-mn)
-        mn -= box*(expansion-1)/2
-        mx += box*(expansion-1)/2 
-        dist = scipy.stats.uniform(mn, mx-mn)
-
-        x = dist.rvs()
+    cov = 0.1*np.cov(live_points.T)
+    x0 = np.random.default_rng().choice(live_points)
+    logL0 = planck.loglikelihood(x0)
+    for _ in range(num_repeats):
+        x = scipy.stats.multivariate_normal(x0, cov).rvs()
         logL = planck.loglikelihood(x)
-        if logL > live_logLs.min():
-            break
-    return x, logL
+        if logL > live_logLs.min() and planck.prior.pdf(x).prod() > 0:
+            x0 = x.copy()
+            logL0 = logL
+
+    return x0, logL0
 
 nlive = 50
 live_points = planck.prior.rvs((nlive, 6))
@@ -39,5 +37,4 @@ dead_logL_births += live_logL_births.tolist()
 
 from anesthetic import NestedSamples
 samples = NestedSamples(dead_points, logL=dead_logLs, logL_birth=dead_logL_births)
-samples.gui()
 plt.plot(*samples[[0,1]].to_numpy().T, '.')

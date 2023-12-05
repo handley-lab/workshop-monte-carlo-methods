@@ -26,7 +26,7 @@ class PlanckGaussian(object):
         d = len(self.mean)
         logLmax = logL_mean + d/2
         self.dist = multivariate_normal(self.mean, self.cov)
-        self.offset = self.dist.logpdf(self.mean) + logLmax
+        self.offset = -self.dist.logpdf(self.mean) + logLmax
         self.prior = uniform(self.bounds[:,0], self.bounds[:,1]-self.bounds[:,0])
         self.columns = ['omegabh2', 'omegach2', 'theta', 'tau', 'logA', 'ns']
         self.labels = [r'$\Omega_b h^2$', r'$\Omega_c h^2$', r'$100\theta_{MC}$',

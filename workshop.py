@@ -198,7 +198,7 @@ planck_samples
 
 plt.plot(*planck_samples[['logA', 'tau']].to_numpy().T, '.');
 
-#| To plot the marginal contours, we have to use some form of low-dimensional density estimation (kde is the standard, basically putting a small gaussian on each sample and adding these together, but in principle one could use neural density estimators or histograms for more/less advanced examples). Density estimation is an acceptable approximation in one and two dimensions but becomes very innacurate in higher dimensions. 
+#| To plot the marginal contours, we have to use some form of low-dimensional density estimation. Kernel density estimation (KDE) is the standard (basically putting a small gaussian on each sample and adding these together) but in principle one could use neural density estimators or histograms for more/less advanced versions. Density estimation is an acceptable approximation in one and two dimensions but becomes very innacurate in higher dimensions. 
 
 #| There are many packages that implement all of this for you, and I would encourage you to resist the temptation to write your own! (irony noted)
 #| - [getdist](https://getdist.readthedocs.io/en/latest/)
@@ -221,19 +221,55 @@ planck_samples[['logA', 'tau']].plot_2d();
 #| $$ x\sim P(x)dx \quad\Rightarrow\quad f(x) \sim P(f)df$$
 #| namely, if you have a set of samples in a variable $x$, and you want to know how $y=f(x)$ is distributed, you just assume the answer is $x_i$ and compute $y_i = f(x_i)$ for each sample. Sampling turns uncertainty quantification into repeated forward models.
 
-#| __Exercise 2.4:__ if $x$ is normally distributed, plot the distribution of $2**x$
+#| __Exercise 2.4:__ if $x$ is normally distributed, plot the distribution of $2^xx$. Bonus question: prove mathematically that in this case x is log-normally distributed, find its scale parameter, and plot this on your plot.
+
+# Answer
+#-
+# %load solutions/2.4.py
+
+#| One can compute averages by summing over samples:
+#| $$ \langle f \rangle_P \quad=\quad \int f(x) P(x) dx \quad\approx\quad \frac{1}{N} \sum\limits_{i=1}^N f(x_i)$$
+#| Note that the (generally unknown) density __does not__ appear in the final expression, which shows that sampling is our primary tool for avoiding high-dimensional density estimation.
+
+#| To confuse you on this last point, most methods for generating samples will often create _weighted samples_, namely each sample $x_i$ has an associated weight $w_i$, and the average is computed as:
+#| $$ \langle f \rangle_P \quad\approx\quad \tfrac{1}{\sum_i w_i}\sum_i w_i f(x_i)$$
+#| This weight is __not__ generally the probability density.
 #|
-#| __Exercise 2.5:__ prove mathematically that in this case x is log-normally distributed, find its scale parameter, and plot this on your plot
+#| `anesthetic` is a pandas extension which computes weighted statistics.
+
+from anesthetic import Samples
+
+x = np.random.rand(100,3)
+w = np.random.rand(100)
+samples = Samples(x, weights=w)
+samples
+#-
+samples.mean()
+#-
+samples.std()
+
+
+
+#| Exercise 2.5: confirm that the the weighted mean and standard deviation are not the same as numpy's default.
 
 # Answer
 #-
 # %load solutions/2.5.py
 
-#| The golden rule of Numerical inference is __stay in samples__ until the end. You should know by now that in general
-#| $$f(\langle x \rangle) \ne \langle f(x) \rangle $$
-#| so taking a mean before the end can bias your inference.
+#| Getting weighted means and standard deviations correct is a faff, and a common source of bugs in numerical inference code, so it's worth being aware of this/using anesthetic's extensive functionality.
+
+
+
+#| ### Summary
+#| Samples are the fundamental building block of numerical inference. You should view them as "souped-up error bars", summarising uncertainty in your analysis. If you have an analysis that you could do if you knew all the inputs $x$, and you have samples from the distribution $x$ belongs to, you just do the analysis $N$ times for each sample, get $N$ answers, and the distribution of these answers quantifies your uncertainty.
 #|
-#| The next question which might be occurring to you is "How do I generate samples if my distribution is not in scipy?" (e.g. a feynman-calculation based matrix element, or a cosmological likelihood)
+#| The golden rule of Numerical inference is therefore to __stay in samples__ until the end. You should know by now that in general
+#| $$f(\langle x \rangle) \ne \langle f(x) \rangle $$
+#| so taking an average/summary before the end can bias your inference.
+#|
+#| Using samples
+#|
+#| The next question which might be occurring to you is "How do I generate samples if my distribution is not in scipy?" (e.g. a Feynman-calculation based matrix element, or a cosmological likelihood)
 
 
 #| ## 3. Sampling
@@ -241,7 +277,7 @@ planck_samples[['logA', 'tau']].plot_2d();
 #|
 #|(N.B. The frontier of inference at the moment is simulation based inference, which develops methods for inference when you only have a simulator $f(x)$, but this is beyond the scope of this workshop).
 
-#| ## 3.0 Random sampling
+#| ### 3.0 Random sampling
 #| Let's first see why random sampling is not sufficient.
 #|
 
@@ -264,7 +300,7 @@ from handleymcmethods.examples import planck
 
 #| Whilst this approach does find the maximum probability point, this does not generate samples, which is what we need for our error bars.
 
-#| ## 3.1 Metropolis Hastings
+#| ### 3.1 Metropolis Hastings
 #|
 #| The first approach that can successfully generate samples from a distribution is the [Metropolis-Hastings algorithm](https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm).
 #| The simplest version of this algorithm is as follows:
@@ -320,7 +356,7 @@ from handleymcmethods.examples import planck
 #| Further extensions to this approach include ensemble sampling ([emcee](https://emcee.readthedocs.io)), slice sampling ([zeus](https://zeus-mcmc.readthedocs.io/en/latest/)) and many others.
 
 
-#| ## 3.2 Nested sampling
+#| ### 3.2 Nested sampling
 #|
 #| As discussed in my [talk](https://github.com/williamjameshandley/talks/raw/unam_2023/will_handley_unam_2023.pdf), the nested sampling algorithm can be summarised as:
 #| - generate nlive samples from the prior
@@ -333,7 +369,7 @@ from handleymcmethods.examples import planck
 #-
 # %load solutions/3.2.1.py
     
-#| You should find you get about to at most 500 iterations before you run out of patience!
+#| You should find you get about to about 500 iterations before you run out of patience!
 
 #| __Exercise 3.2.2:__ This time, implement a more efficient approach by using a box around the live points to generate samples from the prior. To be correct, you should make the box slightly larger than this! Run the algorithm for 
 #| - __Question 3.2.2:__ What are the failure modes of this method?
@@ -348,7 +384,37 @@ from handleymcmethods.examples import planck
 #-
 # %load solutions/3.2.3.py
 
-#| __Exercise 3.2.4:__ Write a non-rejection based sampling algorithm (e.g. metropolis hastings using the covariance of the live points to build a proposal distribution) and compare the number of likelihood evaluations required to reach the same accuracy.
+#| __Exercise 3.2.4:__ Write a non-rejection based sampling algorithm (e.g. metropolis hastings using the covariance of the live points to build a proposal distribution) and compare the speed.
+
+# Answer
+#-
+# %load solutions/3.2.4.py
+
+#| ## Interlude
+#|
+#| The goal of the above 'my first metropolis algorithm' and 'my first nested sampler' exercises is to give you a feel for how at these algorithms work at the base level, and how they can be implemented, so that you can assess the efficiacy of new ideas. In practice you should use one of the more established libraries for doing this, which have been battle-tested and optimised for speed. In particular, some of the things which cause ~O(10) lines of code to expand to ~O(1000) lines are:
+#| - sophisticated live point generation
+#| - parallelisation
+#| - mode identification & handling
+#|
+#| Most packages focus on the first of these, many (but not all) provide the second, with very few implementing the substantial bookkeeping required for the third.
+
+#| Summary of Packages
+
+#| General advice on usage
+
+#| ## References:
+#| - [Nature review article](https://arxiv.org/abs/2205.15570): Nested sampling for physical sscientists
+#|   - pedagogical introduction by the community to nested sampling
+#| - [Technical review article](https://arxiv.org/abs/2101.09675): Nested sampling methods
+#|   - technical review by Johannes Buchner (author of UltraNest)
+#|   - detailed and complete reference list of the entire nested sampling literature up to early 2023.
+#| - [John Skillings original paper](https://projecteuclid.org/journals/bayesian-analysis/volume-1/issue-4/Nested-sampling-for-general-Bayesian-computation/10.1214/06-BA127.full)
+#|   - original paper on nested sampling
+#|   - a goldmine of insight in John's unique style
+
+
+
 
 #| ## 4. Integration
 #| 
@@ -360,7 +426,7 @@ from handleymcmethods.examples import planck
 #|
 #| However, there is another portion of the integral, namely $dx$, which posterior samples __do not__ give us. The challenge is therefore not finding the "typical set", or generating points within it, it is measuring its volume.
 
-#| ## 3.1 Importance sampling
+#| ### 4.1 Importance sampling
 #| The go-to method in particle physics for doing this is importance sampling.
 #| The premise here is to find a normalised distribution $Q(x)$ which easy to sample from (for example a scipy distribution), and which is similar to $P^*(x)$ in the region where $P^*(x)$ is non-zero.
 #| 
@@ -368,10 +434,63 @@ from handleymcmethods.examples import planck
 #| $$ \int P^*(x) dx = \int \frac{P^*(x)}{Q(x)} Q(x) dx = \left\langle \frac{P^*(x)}{Q(x)} \right\rangle_Q$$
 #| I.e. one generates samples from $x\sim Q(x)$ and computes the average of $P^*(x)/Q(x)$.
 #|
-#| You can think of this intuitively as 'trimming off' the regions where $P^*(x)$ is zero, and then computing the average of the remaining regions -- a more sophisticate way of picking a cleverer prior.
+#| You can think of this intuitively as 'trimming off' the regions where $P^*(x)$ is zero, and then computing the average of the remaining regions -- a more sophisticated way of picking a narrower prior
 #|
 #| If you choose a poor $Q$, then this will be very inefficient, with very few samples contributing to the integral. These weighted samples are in a definite sense exact
+
+#| __Exercise 4.1.1:__ Take $P^*(x)$ to be the `planck.loglikelihood` added to the `planck.prior.logpdf`, and Q(x) to be a scipy.stats_multivariate_normal with `planck.mean`, `planck.cov`. Compute the integral using importance sampling. You should get `logZ=-1431.403883060199`. You may find it useful to use `scipy.special.logsumexp` to compute the average.
+
+# Answer
+#-
+# %load solutions/4.1.1.py
+
+
+#| __Exercise 4.1.2:__ Now compute the integral with a slightly misspecified proposal $Q$ by choosing a mean offset by a random amount. Compute the effective number of samples using the formula $$ n = \frac{(\sum_i w_i)^2 }{ \sum_i w_i^2} $$ where $w_i$ are the importance weights we are averaging over
+
+# Answer
+#-
+# %load solutions/4.1.2.py
+
+#| __Exercise 4.1.2:__ Try other distributions (e.g. multivariate_t, adjusting the covariance matrix using a wishart distribution, etc). How does the efficiency change?
+
+#| What the above exercise shows is that if you have a good proposal $Q$, then this can be a very efficient way of computing an integral. However, the efficiency drops for even slightly misspecified $Q$, and this problem exponentially worsens in high dimensions
+
+#| ### 4.2 Nested sampling
 #|
-#| ## 3.2 Nested sampling
-#|
-#| Nested sampling can be thought ouf a set of nested importance samples
+#| Nested sampling provides a more sophisticated way to achieve the above. We begin by making the standard [Lebesgue integral](https://en.wikipedia.org/wiki/Lebesgue_integration) manipulation. First define the volume (/prior volume/measure/CDF) as:
+#| $$ X(P^*) = \int_{P^*(x)>P^*} dx$$
+#| this is the volume of the space contained inside each contour of $P^*$.  With this definition, we can say
+#| $$ Z = \int P^* dx = \int P^* dX \approx \sum_i P^*_i \Delta X_i $$
+#| which has transformed the multidimensional integral into a one-dimensional one which can be tractably numerically integrated.
+
+#| The power of nested sampling is that we can estimate $X_i$ from the nested sampling compression procedure:
+#| $$X_i \approx \frac{n}{n+1} X_{i-1} $$
+
+#| __Exercise 4.2.1:__ Compute the nested sampling evidence estimate, and compare to the value you found with importance sampling. 
+
+# Answer
+#-
+# %load solutions/4.2.1.py
+
+X0 = np.diff(planck.bounds).prod()
+logL_max = max(dead_logLs)
+Z = 0
+for logL in dead_logLs:
+    X1 = X0 * nlive/(nlive+1)
+    Z += np.exp(logL-logL_max) * (X0-X1)
+    X0 = X1
+
+print(f'logZ = {logL_max+np.log(Z)}')
+
+#| It's a little more involved to quantify the $\approx$ using samples from the distribution of $X_i$, but fortunately anesthetic has implemented all of this for you
+samples = planck_gaussian()
+samples.logZ(1000).hist()
+
+#| and much more besides
+samples.nlive.plot()
+
+#| and much more besides
+samples.stats()
+
+#| and much more besides
+samples.stats(1000).plot_2d()
