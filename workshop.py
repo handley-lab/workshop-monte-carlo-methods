@@ -267,9 +267,11 @@ samples.std()
 #| $$f(\langle x \rangle) \ne \langle f(x) \rangle $$
 #| so taking an average/summary before the end can bias your inference.
 #|
-#| Using samples
+#| You can then use samples to compute averages, and extract marginal distributions by ignoring columns, from which you can compute 1D and 2D contours. This is the basis of the triangle plot.
 #|
-#| The next question which might be occurring to you is "How do I generate samples if my distribution is not in scipy?" (e.g. a Feynman-calculation based matrix element, or a cosmological likelihood)
+#| __Question 2.6:__ [hard] what statistical operation can you not get easily from samples?
+
+#| We now move on to techniques as to how one can generate samples from an arbitrary distribution.
 
 
 #| ## 3. Sampling
