@@ -14,4 +14,3 @@ print(f'logZ = {logZ}')
 neff = np.exp(2*scipy.special.logsumexp(w) - scipy.special.logsumexp(2*w))
 print(f'effective number of samples = {neff}')
 print(f'efficiency = {neff/nsamples}')
-

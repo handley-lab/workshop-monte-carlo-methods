@@ -472,16 +472,6 @@ from handleymcmethods.examples import planck
 #-
 # %load solutions/4.2.1.py
 
-X0 = np.diff(planck.bounds).prod()
-logL_max = max(dead_logLs)
-Z = 0
-for logL in dead_logLs:
-    X1 = X0 * nlive/(nlive+1)
-    Z += np.exp(logL-logL_max) * (X0-X1)
-    X0 = X1
-
-print(f'logZ = {logL_max+np.log(Z)}')
-
 #| It's a little more involved to quantify the $\approx$ using samples from the distribution of $X_i$, but fortunately anesthetic has implemented all of this for you
 samples = planck_gaussian()
 samples.logZ(1000).hist()

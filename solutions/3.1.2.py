@@ -19,4 +19,3 @@ for _ in range(3):
     plt.plot(*samples[:,[0,1]].T)
 
 plt.plot(*planck.mean[:2], 'x', markersize=10, color='black');
-
