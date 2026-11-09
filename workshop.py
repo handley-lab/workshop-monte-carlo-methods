@@ -219,7 +219,7 @@ planck_samples[['logA', 'tau']].plot_2d();
 #| $$ x\sim P(x)dx \quad\Rightarrow\quad f(x) \sim P(f)df$$
 #| namely, if you have a set of samples in a variable $x$, and you want to know how $y=f(x)$ is distributed, you just assume the answer is $x_i$ and compute $y_i = f(x_i)$ for each sample. Sampling turns uncertainty quantification into repeated forward models.
 
-#| __Exercise 2.4:__ if $x$ is normally distributed, plot the distribution of $2^xx$. Bonus question: prove mathematically that in this case x is log-normally distributed, find its scale parameter, and plot this on your plot.
+#| __Exercise 2.4:__ if $x$ is normally distributed, plot the distribution of $2^x$. Bonus question: prove mathematically that in this case x is log-normally distributed, find its scale parameter, and plot this on your plot.
 
 # Answer
 #-
@@ -261,7 +261,7 @@ samples.std()
 #| ### Summary
 #| Samples are the fundamental building block of numerical inference. You should view them as "souped-up error bars", summarising uncertainty in your analysis. If you have an analysis that you could do if you knew all the inputs $x$, and you have samples from the distribution $x$ belongs to, you just do the analysis $N$ times for each sample, get $N$ answers, and the distribution of these answers quantifies your uncertainty.
 #|
-#| The golden rule of Numerical inference is therefore to __stay in samples__ until the end. You should know by now that in general
+#| The golden rule of numerical inference is therefore to __stay in samples__ until the end. You should know by now that in general
 #| $$f(\langle x \rangle) \ne \langle f(x) \rangle $$
 #| so taking an average/summary before the end can bias your inference.
 #|
@@ -341,7 +341,7 @@ from handleymcmethods.examples import planck
 #| $$ \alpha = \min\left(1, \frac{P(x')Q(x|x')}{P(x)Q(x'|x)}\right)$$
 #| - repeat until convergence criterion is reached
 #|
-#| Note this includes the generalisation to asymmetric proposal distributions, which is necessary for the algorithm to converge, and more carefully acounts for the fact that the probability shouldn't be greater than 1. Convergence criteria usually include a variation of the Gelman-Rubin statistic.
+#| Note this includes the generalisation to asymmetric proposal distributions, which is necessary for the algorithm to converge, and more carefully accounts for the fact that the probability shouldn't be greater than 1. Convergence criteria usually include a variation of the Gelman-Rubin statistic.
 #| 
 #| Example implementations of metropolis hastings include
 #| - [PyMC](https://www.pymc.io/welcome.html)
@@ -464,7 +464,7 @@ from handleymcmethods.examples import planck
 #|   - If you had $n_\mathrm{live}^0$ and $n_\mathrm{cores}^0$ giving you $T_0$, the full runtime will be
 #|    $$T = T_0 \times \frac{n_\mathrm{live}}{n_\mathrm{live}^0} \times \frac{n_\mathrm{cores}^0}{n_\mathrm{cores}}$$
 #|   - With arbitrary HPC, you can scale the cores with the live points and retain the same walltime $T_0$.
-#| 3. check that you ran with high enough $f_sampler$ by halving/doubling it and checking the results are consistent.
+#| 3. check that you ran with high enough $f_{sampler}$ by halving/doubling it and checking the results are consistent.
 
 
 
@@ -473,7 +473,7 @@ from handleymcmethods.examples import planck
 #| General advice on usage
 
 #| ## References:
-#| - [Nature review article](https://arxiv.org/abs/2205.15570): Nested sampling for physical sscientists
+#| - [Nature review article](https://arxiv.org/abs/2205.15570): Nested sampling for physical scientists
 #|   - pedagogical introduction by the community to nested sampling
 #| - [Technical review article](https://arxiv.org/abs/2101.09675): Nested sampling methods
 #|   - technical review by Johannes Buchner (author of UltraNest)
